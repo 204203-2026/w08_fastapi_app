@@ -1,0 +1,56 @@
+name: Grade w08_fastapi_app
+
+on:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: write
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.7"
+
+      - name: Initialize and recompute results
+        run: |
+          set -e
+          bash init.sh
+          bash check.sh
+          cat results/report.json
+
+      - name: Commit authoritative results
+        if: always()
+        run: |
+          git add results/report.json results/challenge_report.json
+          if git diff --cached --quiet; then
+            echo "Committed results already match CI — nothing to correct."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "CI: sync authoritative grading results [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Enforce required checks
+        run: |
+          SCORE=$(grep -o '"score":[[:space:]]*[0-9]\+' results/report.json | grep -o '[0-9]\+')
+          TOTAL=$(grep -o '"total":[[:space:]]*[0-9]\+' results/report.json | grep -o '[0-9]\+')
+          FAILS=$(grep -o '"status":[[:space:]]*"fail"' results/report.json | grep -c '' || true)
+          {
+            echo "### w08_fastapi_app — Required: ${SCORE:-0} / ${TOTAL:-0} passed"
+            echo ""
+            if [ "${FAILS:-0}" -gt 0 ]; then
+              echo "❌ **${FAILS} required check(s) failing.**"
+            else
+              echo "✅ **All required checks passed.**"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${FAILS:-0}" -gt 0 ]; then
+            exit 1
+          fi

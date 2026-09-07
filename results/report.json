@@ -1,0 +1,5 @@
+{
+  "score": 1,
+  "total": 10,
+  "results": [{"name": "structure", "status": "pass"},{"name": "uv_deps", "status": "fail"},{"name": "compose_up", "status": "fail"},{"name": "me_endpoint", "status": "fail"},{"name": "tests_pass", "status": "fail"},{"name": "aqi_normal", "status": "fail"},{"name": "aqi_boundary", "status": "fail"},{"name": "vue_static", "status": "fail"},{"name": "proxy_config", "status": "fail"},{"name": "proxy_live", "status": "fail"}]
+}

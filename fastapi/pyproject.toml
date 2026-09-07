@@ -1,0 +1,13 @@
+[project]
+name = "backend-starter"
+version = "0.0.0"
+requires-python = ">=3.12"
+dependencies = []
+
+# Without this, `docker compose run --rm fastapi uv run pytest -q` cannot
+# import `main` from tests/test_api.py (pytest only puts tests/ on sys.path,
+# not the /app root main.py lives in) -- and the failure is a collection
+# ModuleNotFoundError, not the clean "assert 404 == 200" the TDD red step
+# needs. `uv add` preserves this section when it rewrites dependencies=[].
+[tool.pytest.ini_options]
+pythonpath = ["."]

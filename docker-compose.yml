@@ -1,0 +1,43 @@
+name: w08-fastapi-app
+
+services:
+  fastapi:
+    build:
+      context: ./fastapi
+    command: uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "56733:8000"
+    environment:
+      # Real Open-Meteo by default. Grading overrides this to point at the
+      # aqi-fixture service below, so checks run with no network at all.
+      - AQI_BASE_URL=${AQI_BASE_URL:-https://air-quality-api.open-meteo.com}
+    volumes:
+      - ./fastapi:/app
+      - /app/.venv
+      - ./grading:/grading:ro
+    depends_on:
+      - aqi-fixture
+
+  frontend:
+    build:
+      context: ./frontend
+    command: npm run dev -- --host 0.0.0.0 --port 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - fastapi
+
+  # Serves frozen, designed Open-Meteo-shaped payloads so the required AQI
+  # checks never touch the real network. Selected by path:
+  # AQI_BASE_URL=http://aqi-fixture/<scenario> -> grading/fixtures/<scenario>.json
+  # See grading/nginx/default.conf for the routing rule.
+  aqi-fixture:
+    image: nginx:alpine
+    volumes:
+      - ./grading/fixtures:/usr/share/nginx/html:ro
+      - ./grading/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8001:80"

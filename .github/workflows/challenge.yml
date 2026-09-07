@@ -1,0 +1,43 @@
+name: Challenge (bonus) — w08_fastapi_app
+
+on:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: write
+
+jobs:
+  challenge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.7"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Recompute bonus results
+        run: |
+          bash init.sh
+          bash check.sh
+          cat results/challenge_report.json
+          BONUS=$(grep -o '"bonus":[[:space:]]*[0-9]\+' results/challenge_report.json | grep -o '[0-9]\+' | head -1)
+          BONUS_TOTAL=$(grep -o '"bonus_total":[[:space:]]*[0-9]\+' results/challenge_report.json | grep -o '[0-9]\+' | head -1)
+          {
+            echo "### ⭐ Challenge: ${BONUS:-0} / ${BONUS_TOTAL:-0} completed"
+            echo ""
+            echo "Bonus never affects the required grade."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload challenge result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: challenge_report
+          path: results/challenge_report.json
+          if-no-files-found: warn

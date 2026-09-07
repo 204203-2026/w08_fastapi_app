@@ -1,0 +1,5 @@
+{
+  "bonus": 0,
+  "bonus_total": 7,
+  "results": [{"name": "frontend_build", "status": "todo"},{"name": "deployed", "status": "todo"},{"name": "aqi_nulls", "status": "todo"},{"name": "aqi_not_in_list", "status": "todo"},{"name": "aqi_upstream_down", "status": "todo"},{"name": "aqi_malformed", "status": "todo"},{"name": "hourly_table", "status": "todo"}]
+}
